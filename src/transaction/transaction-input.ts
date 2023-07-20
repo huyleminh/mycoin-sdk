@@ -1,6 +1,7 @@
 import * as ecdsa from "elliptic";
+import { HexaConverter } from "../utils/converter";
+import { WalletKeyAgent } from "../utils/wallet-key";
 import { UnspentTxOutput, findUnspentTxOutput } from "./transaction-output";
-import { HexaConverter, WalletKeyAgent } from "../utils";
 
 const ec = new ecdsa.ec("secp256k1");
 

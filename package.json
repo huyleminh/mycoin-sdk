@@ -3,15 +3,24 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf ./dist && tsc",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/huyleminh/mycoin-sdk.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Huy Le Minh",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/huyleminh/mycoin-sdk/issues"

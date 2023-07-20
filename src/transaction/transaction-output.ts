@@ -1,4 +1,4 @@
-import { WalletKeyAgent } from "../utils";
+import { WalletKeyAgent } from "../utils/wallet-key";
 
 export class UnspentTxOutput {
     constructor(
@@ -39,4 +39,19 @@ export function findUnspentTxOutput(
     aUnspentTxOuts: UnspentTxOutput[]
 ): UnspentTxOutput | null {
     return aUnspentTxOuts.find((uTxO) => uTxO.txOutputId === txOutputId && uTxO.txOutputIndex === index) || null;
+}
+
+export function createTxOutputList(
+    senderAddress: string,
+    receiverAddress: string,
+    amount: number,
+    leftOverAmount: number
+): TransactionOutput[] {
+    const txOut1: TransactionOutput = new TransactionOutput(receiverAddress, amount);
+    if (leftOverAmount === 0) {
+        return [txOut1];
+    }
+
+    const leftOverTx = new TransactionOutput(senderAddress, leftOverAmount);
+    return [txOut1, leftOverTx];
 }
