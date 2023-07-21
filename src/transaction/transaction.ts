@@ -1,11 +1,16 @@
-import crypto from "crypto";
+import CryptoJS from "crypto-js";
+import { WalletKeyAgent } from "../main";
 import { TransactionInput } from "./transaction-input";
 import { TransactionOutput, UnspentTxOutput, createTxOutputList, findTxOutputForAmount } from "./transaction-output";
-import { WalletKeyAgent } from "../main";
 
 export class Transaction {
     public id: string;
-    constructor(public txInputList: TransactionInput[], public txOutputList: TransactionOutput[]) {
+    constructor(
+        public owner: string,
+        public txInputList: TransactionInput[],
+        public txOutputList: TransactionOutput[],
+        public timestamp: number
+    ) {
         this.id = this.calculateIdHash();
     }
 
@@ -19,11 +24,10 @@ export class Transaction {
             .map((txOut: TransactionOutput) => txOut.address + txOut.amount)
             .reduce((a, b) => a + b, "");
 
-        const stringToHash = txInContent + txOutContent;
-        const hash = crypto.createHash("sha256");
-        hash.update(stringToHash);
+        const stringToHash = this.owner + txInContent + txOutContent + this.timestamp;
+        const hash = CryptoJS.SHA256(stringToHash);
 
-        return hash.digest().toString("hex");
+        return hash.toString(CryptoJS.enc.Hex);
     }
 
     static isStructureValid(transaction: Transaction): boolean {
@@ -68,8 +72,10 @@ export class Transaction {
         });
 
         const tx: Transaction = new Transaction(
+            senderAddress,
             unsignedTxIns,
-            createTxOutputList(senderAddress, receiver, amount, leftOverAmount)
+            createTxOutputList(senderAddress, receiver, amount, leftOverAmount),
+            new Date().getTime() / 1000
         );
 
         tx.txInputList = tx.txInputList.map((txIn) => {
