@@ -55,3 +55,20 @@ export function createTxOutputList(
     const leftOverTx = new TransactionOutput(senderAddress, leftOverAmount);
     return [txOut1, leftOverTx];
 }
+
+export function findTxOutputForAmount(amount: number, unspentTxOutputList: UnspentTxOutput[]) {
+    let currentAmount = 0;
+    const includedUnspentTxOuts = [];
+
+    for (const myUnspentTxOut of unspentTxOutputList) {
+        includedUnspentTxOuts.push(myUnspentTxOut);
+        currentAmount = currentAmount + myUnspentTxOut.amount;
+
+        if (currentAmount >= amount) {
+            const leftOverAmount = currentAmount - amount;
+            return { includedUnspentTxOuts, leftOverAmount };
+        }
+    }
+
+    throw Error("Cannot create transaction from the available unspent transaction outputs");
+}

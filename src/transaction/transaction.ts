@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { TransactionInput } from "./transaction-input";
-import { TransactionOutput } from "./transaction-output";
+import { TransactionOutput, UnspentTxOutput, createTxOutputList, findTxOutputForAmount } from "./transaction-output";
+import { WalletKeyAgent } from "../main";
 
 export class Transaction {
     public id: string;
@@ -46,5 +47,37 @@ export class Transaction {
         }
 
         return true;
+    }
+
+    static createSignTransaction(data: {
+        receiver: string;
+        amount: number;
+        senderPrivate: string;
+        unspentTxOutputs: UnspentTxOutput[];
+    }): Transaction {
+        const { receiver, amount, senderPrivate, unspentTxOutputs } = data;
+
+        const senderAddress: string = new WalletKeyAgent().getPublicAddress(senderPrivate);
+
+        // filter from unspentOutputs such inputs that are referenced in pool
+        const { includedUnspentTxOuts, leftOverAmount } = findTxOutputForAmount(amount, unspentTxOutputs);
+
+        const unsignedTxIns: TransactionInput[] = includedUnspentTxOuts.map((unspentTxOut) => {
+            const txIn = new TransactionInput(unspentTxOut.txOutputId, unspentTxOut.txOutputIndex, "");
+            return txIn;
+        });
+
+        const tx: Transaction = new Transaction(
+            unsignedTxIns,
+            createTxOutputList(senderAddress, receiver, amount, leftOverAmount)
+        );
+
+        tx.txInputList = tx.txInputList.map((txIn) => {
+            // txIn.signature = txIn.calculateSignature(privateKey, tx.id, unspentTxOuts);
+            txIn.signature = txIn.calculateSignature(senderPrivate, tx.id, unspentTxOutputs);
+            return txIn;
+        });
+
+        return tx;
     }
 }
